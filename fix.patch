@@ -1,0 +1,34 @@
+--- a/app.py
++++ b/app.py
+@@ -1,4 +1,4 @@
+-"""Deliberately vulnerable local OWASP lab. Do not expose to the internet."""
++"""Patched local OWASP lab. Bind to loopback for demonstrations."""
+ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ from urllib.parse import parse_qs, urlsplit
+ import sqlite3
+@@ -49,10 +49,10 @@
+         elif parts.path == "/login":
+             username = params.get("username", [""])[0]
+             password = params.get("password", [""])[0]
+-            # VULNERABILITY 1: SQL injection through string interpolation.
+-            sql = f"SELECT username FROM users WHERE username = '{username}' AND password = '{password}'"
++            # FIX 1: parameterized query prevents SQL injection.
++            sql = "SELECT username FROM users WHERE username = ? AND password = ?"
+             try:
+-                row = DB.execute(sql).fetchone()
++                row = DB.execute(sql, (username, password)).fetchone()
+             except sqlite3.Error:
+                 self.respond(400, "<h1>Ошибка запроса</h1>")
+                 return
+@@ -62,8 +62,9 @@
+                 self.respond(401, "<h1>LOGIN_FAILED</h1><p>Неверные данные</p>")
+         elif parts.path == "/search":
+             query = params.get("q", [""])[0]
+-            # VULNERABILITY 2: reflected XSS through unescaped HTML output.
+-            self.respond(200, f"<!doctype html><html lang='ru'><meta charset='utf-8'><h1>Поиск</h1><p>Вы искали: {query}</p></html>")
++            # FIX 2: HTML-escape user-controlled output.
++            safe_query = html.escape(query, quote=True)
++            self.respond(200, f"<!doctype html><html lang='ru'><meta charset='utf-8'><h1>Поиск</h1><p>Вы искали: {safe_query}</p></html>")
+         else:
+             self.respond(404, "<h1>Не найдено</h1>")
+ 

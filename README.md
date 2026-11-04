@@ -92,7 +92,6 @@ lab2_owasp/
 ├── exploit.py      # Скрипт эксплуатации и проверки
 ├── fix.patch       # Unified diff к app.py
 ├── README.md       # Эта инструкция
-└── .gitignore
 ```
 
 ## Размещение на GitHub / GitLab
